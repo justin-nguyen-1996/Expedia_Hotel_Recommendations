@@ -45,7 +45,7 @@ out.close()
 print('Starting XGBoost')
 train_xgb = train.drop("hotel_cluster", axis = 1)
 test_xgb = test.drop("id", axis = 1)
-xgb_clf = XGBClassifier()
+xgb_clf = XGBClassifier(learning_rate = 0.1, max_depth = 5, n_estimators = 50)
 xgb_clf.fit(train_xgb, train['hotel_cluster'].values)
 prediction = xgb_clf.predict_proba(test_xgb)
 xgb_preds = []
