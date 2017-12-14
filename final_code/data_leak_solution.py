@@ -7,7 +7,9 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 from xgboost.sklearn import XGBClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.ensemble import AdaBoostClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.linear_model import LogisticRegression
 import random
 import ml_metrics as metrics
 import xgboost as xgb
@@ -45,7 +47,7 @@ out.close()
 print('Starting XGBoost')
 train_xgb = train.drop("hotel_cluster", axis = 1)
 test_xgb = test.drop("id", axis = 1)
-xgb_clf = XGBClassifier(learning_rate = 0.1, max_depth = 5, n_estimators = 50)
+xgb_clf = XGBClassifier()
 xgb_clf.fit(train_xgb, train['hotel_cluster'].values)
 prediction = xgb_clf.predict_proba(test_xgb)
 xgb_preds = []
@@ -94,6 +96,44 @@ out = open(path, "w")
 out.write("id,hotel_cluster\n")
 for i in range(len(test['id'].values)):
     out.write(str(test['id'].values[i]) + ',' + ' ' + str(lr_preds[i][0]) + ' ' + str(lr_preds[i][1]) + ' ' + str(lr_preds[i][2]) + ' ' + str(lr_preds[i][3]) + ' ' + str(lr_preds[i][4]))
+    out.write("\n")
+out.close()
+
+print('Starting Gaussian Naive Bayes')
+train_gnb = train.drop("hotel_cluster", axis = 1)
+test_gnb = test.drop("id", axis = 1)
+train_gnb = train.fillna(0)
+test_gnb = test.fillna(0)
+gnb_clf = GaussianNB()
+gnb_clf.fit(train_gnb, train_gnb['hotel_cluster'].values)
+prediction = gnb_clf.predict_proba(test_gnb)
+gnb_preds = []
+for i in range(len(prediction)):
+    gnb_preds.append(prediction[i].argsort()[-5:][::-1])
+path = 'gnb_submission.csv'
+out = open(path, "w")
+out.write("id,hotel_cluster\n")
+for i in range(len(test['id'].values)):
+    out.write(str(test['id'].values[i]) + ',' + ' ' + str(gnb_preds[i][0]) + ' ' + str(gnb_preds[i][1]) + ' ' + str(gnb_preds[i][2]) + ' ' + str(gnb_preds[i][3]) + ' ' + str(gnb_preds[i][4]))
+    out.write("\n")
+out.close()
+
+print('Starting KNN')
+train_knn = train.drop("hotel_cluster", axis = 1)
+test_knn = test.drop("id", axis = 1)
+train_knn = train.fillna(0)
+test_knn = test.fillna(0)
+knn_clf = KNeighborsClassifier(n_neighbors = 80)
+knn_clf.fit(train_knn, train_knn['hotel_cluster'].values)
+prediction = knn_clf.predict_proba(test_knn)
+knn_preds = []
+for i in range(len(prediction)):
+    knn_preds.append(prediction[i].argsort()[-5:][::-1])
+path = 'knn_submission.csv'
+out = open(path, "w")
+out.write("id,hotel_cluster\n")
+for i in range(len(test['id'].values)):
+    out.write(str(test['id'].values[i]) + ',' + ' ' + str(knn_preds[i][0]) + ' ' + str(knn_preds[i][1]) + ' ' + str(knn_preds[i][2]) + ' ' + str(knn_preds[i][3]) + ' ' + str(knn_preds[i][4]))
     out.write("\n")
 out.close()
 
